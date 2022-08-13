@@ -34,7 +34,7 @@ function App() {
       onDelete={deleteTask}
       onToggle={toggleReminder}
      /> 
-      : 'No tasks to show!'}
+      : 'No Tasks To Show!'}
     </div>
   );
 }
