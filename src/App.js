@@ -1,42 +1,95 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "./components/Header";
-import Tasks from "./components/Tasks";
+import SignUp from "./components/SignUp";
+import LogIn from "./components/LogIn";
 import AddTask from "./components/AddTask";
+import Tasks from "./components/Tasks";
+import NavBar from "./components/NavBar";
+import ForgotPassword from "./components/ForgotPassword";
+import { AuthProvider } from "./components/Auth";
+import { Routes, Route } from "react-router-dom";
+import { collection, getFirestore, onSnapshot } from "firebase/firestore";
+import ProtectedRoute from "./components/ProtectedRoute";
+import "react-bootstrap";
+import UserProfile from "./components/UserProfile";
 
 function App() {
-  const [showAddTask, setShowAddTask] = useState(false)
-  const [tasks,setTasks]= useState([]);
+  useEffect(() => {
+    onSnapshot(collection(getFirestore(), "tasks"), (snapshot) => {
+      let currSnap = snapshot.docs.map((doc) => {
+        return { ...doc.data(), id: doc.id };
+      });
+      setTaskList(currSnap);
+    });
+  });
 
-  //Add Task
-  const addTask =(task)=>{
-    const id = Math.floor(Math.random()*10000)+1
-    const newTask = {id , ...task }
-
-    setTasks([...tasks,newTask])
-  }
-    
-  //Delete Task
-  const deleteTask=(id) =>{
-    setTasks(tasks.filter((task)=>task.id!==id))
-  }
-  //Toggle Reminder
-  const toggleReminder = (id)=>{
-    setTasks(tasks.map((task)=>task.id === id
-    ?{...tasks,reminder: !task.reminder}: task))
-  }
+  const [taskList, setTaskList] = useState([]);
 
   return (
-    <div className="container">
-      <Header onAdd ={()=> setShowAddTask(!showAddTask)} showAdd={showAddTask}/>
-      {showAddTask && <AddTask onAdd ={addTask}/>}
-      {tasks.length >0 ? 
-      <Tasks tasks={tasks} 
-      onDelete={deleteTask}
-      onToggle={toggleReminder}
-     /> 
-      : 'No Tasks To Show!'}
-    </div>
+    <AuthProvider>
+      <NavBar />
+      <Routes>
+        <Route
+          exact
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Tasks tasks={taskList} />
+            </ProtectedRoute>
+          }
+        ></Route>
+
+        <Route
+          exact
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        ></Route>
+
+        <Route exact path="/login" element={<LogIn />}></Route>
+
+        <Route
+          exact
+          path="/newtask"
+          element={
+            <ProtectedRoute>
+              <AddTask />
+            </ProtectedRoute>
+          }
+        ></Route>
+
+        <Route
+          exact
+          path="/edit-task/:taskId"
+          element={
+            <ProtectedRoute>
+              <AddTask />
+            </ProtectedRoute>
+          }
+        ></Route>
+
+        <Route
+          exact
+          path="/user"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        ></Route>
+
+        <Route exact path="/signup" element={<SignUp />}></Route>
+
+        <Route
+          exact
+          path="/forgot-password"
+          element={<ForgotPassword />}
+        ></Route>
+      </Routes>
+    </AuthProvider>
   );
 }
-
-export default App
+export default App;
