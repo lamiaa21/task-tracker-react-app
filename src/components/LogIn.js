@@ -1,24 +1,20 @@
-import { Form, Button, Card, Alert } from "react-bootstrap";
-import React, { useRef } from "react";
+import { Alert } from "react-bootstrap";
 import { useAuth } from "./Auth";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Formik, Form, Field } from "formik";
 
 const LogIn = () => {
-  const emailRef = useRef();
-  const passRef = useRef();
   const { login, currUser } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-
+  const onSubmit = async (values) => {
     try {
       setError("");
       setLoading(true);
-      await login(emailRef.current.value, passRef.current.value);
+      await login(values.email, values.password);
       navigate("/");
       console.log("Ok Im in as ", currUser.email);
     } catch (err) {
@@ -26,41 +22,52 @@ const LogIn = () => {
       console.log("error");
     }
     setLoading(false);
-  }
+  };
   return (
     <>
       <div
         className="d-flex align-items-center justify-content-center"
         style={{ minHeight: "100vh" }}
       >
-        <div className="w-100" style={{ maxWidth: "400px" }}>
-          <Card>
-            <Card.Body>
-              <h2 className="text-center mb-4">Log In </h2>
+        <div className="card w-100" style={{ maxWidth: "400px" }}>
+          <Formik
+            initialValues={{
+              email: "",
+              password: "",
+            }}
+            onSubmit={(values) => onSubmit(values)}
+          >
+            <Form className="card-body">
+              <h2 className="text-center mb-4">log in</h2>
               {error && <Alert variant="danger">{error}</Alert>}
-              <Form onSubmit={(event) => handleSubmit(event)}>
-                <Form.Group id="email">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control type="email" ref={emailRef} required />
-                </Form.Group>
-                <Form.Group id="password">
-                  <Form.Label>Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    ref={passRef}
-                    minLength="6"
-                    required
-                  />
-                </Form.Group>
-                <Button disabled={loading} className="w-100" type="submit">
-                  Log in
-                </Button>
-              </Form>
+              <Field
+                className="form-control"
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Email Address"
+                required
+              />
+              <Field
+                className="form-control"
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Create a Password"
+                required
+              />
+              <button
+                disabled={loading}
+                className="btn btn-primary w-100"
+                type="submit"
+              >
+                Log in
+              </button>
               <div className="w-100 text-center mt-2">
                 <Link to="/forgot-password">Forgot password?</Link>
               </div>
-            </Card.Body>
-          </Card>
+            </Form>
+          </Formik>
           <div className="w-100 text-center mt-2">
             Do not have an account?
             <Link to="/signup">Sign Up</Link>

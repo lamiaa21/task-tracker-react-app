@@ -44,7 +44,7 @@ const NavBar = () => {
             </button>
           </div>
         )}
-      
+                               
     </nav>
   );
 };
